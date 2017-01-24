@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>数字摇奖(老虎机)</title>
+<meta name="keyword" content="数字，抽奖，摇奖，老虎机" />
+<meta name="description" content="老虎机形式的摇奖" />
+<link rel="stylesheet" type="text/css" href="css/styles.css" media="screen" />
+</head>
+<body>
+<div class="main_bg">
+    <div class="main">
+        <div id="res" class="result"></div>
+        <div class="num_mask"></div>
+        <div class="num_box">
+            <div class="num"></div>
+            <div class="num"></div>
+            <div class="num"></div>
+            <div class="btn"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/jquery-1.11.0.js"></script>
+<script type="text/javascript" src="js/animateBackground-plugin.js"></script>
+<script type="text/javascript" src="js/easing.js"></script>
+<script>
+function numRand(rate,total,count) {
+    var array=new Array(count);
+    for (var i = 0; i < count; i++) {
+        var result=0;
+        for (var j = total - 1; j >= 0; j--) {
+            result=result*10+i+1;
+        }
+        array[i]=result;
+    }
+    var random = Math.random();
+    // 中奖
+    if(random < rate){
+        random=Math.random();
+        var index=parseInt(random*count);
+        return array[index];
+    } 
+    // 未中奖
+    else{
+        return randomNotSame(array);
+    }
+}
+
+function randomNotSame(array){
+    var count=array.length;
+    var total=(array[count-1]+'').length;
+    var rand=0;
+    // 逐位生成图标索引
+    for (var i = total-1; i >= 0; i--) {
+        // 生成[1,count]之间的数字
+        var t=parseInt(Math.random()*count+1);
+        rand=rand*10+t;
+    }
+    // 检查生成的图标不能是相同的
+    for (var i = array.length-1; i >= 0; i--) {
+         if(rand==array[i]){
+            // 相同的图标再来一次随机
+            return randomNotSame(array);
+         }   
+    }
+    return rand;
+}
+
+var isBegin = false;
+$(function(){
+    // 命中概率
+    var rate = 0.60;
+    // 一个图标的高度
+    var u = 265;
+    // 共有多少套图标
+    var count = 5;
+    // 滚动个数
+    var array = $(".num");
+    var total = array.size();
+    
+    $('.btn').click(function(){
+        if(isBegin) return false;
+        isBegin = true;
+        array.css('background-position', '11px 0');
+        var result = numRand(rate,total,count);
+        // $('#res').text('result = '+result);
+        var num_arr = (result+'').split('');
+        array.each(function(index){
+            var _num = $(this);
+            var yPos = u*(60 - num_arr[index]);
+            setTimeout(function(){
+                _num.animate({ 
+                    backgroundPosition: '11px ' + yPos + 'px'
+                },{
+                    // 动画持续时间
+                    duration: 6000+index*3000,
+                    easing: "easeInOutCirc",
+                    complete: function(){
+                        if(index==total-1){
+                            isBegin = false;
+                        } 
+                    }
+                });
+            }, 
+            // 延迟启动时间
+            index * 300);
+        });
+    }); 
+});
+</script>
+</body>
+</html>
